@@ -1,9 +1,2 @@
-node_modules/
-dist/
-*.tgz
-__pycache__/
-*.pyc
-.venv/
 vendor/
-Gemfile.lock
 composer.lock

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          extensions: curl, json
+
+      # Resolving through Composer's autoloader rather than a manual require is the point:
+      # it is what proves each class sits in the file PSR-4 expects.
+      - name: Install
+        run: composer dump-autoload --no-interaction
+
+      - name: Verify autoloading and signature verification
+        run: |
+          php -r '
+            require "vendor/autoload.php";
+            $secret = "whsec_test";
+            $body = "{\"event\":\"message.sent\"}";
+            $sig = "sha256=" . hash_hmac("sha256", $body, $secret);
+            if (!\Vive\Vive::verifyWebhookSignature($body, $sig, $secret)) { exit("valid signature rejected\n"); }
+            if (\Vive\Vive::verifyWebhookSignature($body, $sig, "whsec_other")) { exit("forgery accepted\n"); }
+            foreach (["ViveException", "AuthException", "RateLimitException", "ValidationException"] as $c) {
+              if (!class_exists("\\Vive\\$c")) { exit("$c is not autoloadable\n"); }
+            }
+            echo "ok\n";
+          '
