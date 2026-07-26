@@ -18,4 +18,4 @@ $message = $vive->sendText('15551234567', 'Your order shipped.', 'order-4417-shi
 - Automatic retry of `429` and `5xx`; never retries `4xx`
 - Constant-time webhook signature verification
 
-Full documentation: [docs](../../docs).
+Full documentation: <https://app.getvive.ai/docs/>.
